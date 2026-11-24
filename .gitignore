@@ -1,0 +1,21 @@
+# 依赖
+node_modules/
+
+# 构建产物（exe 走 GitHub Release 发布，不进仓库）
+dist/
+*.exe
+
+# 本地配置与凭据
+local-config.json
+local-token.bin
+
+# 系统与编辑器
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
+
+# 测试/临时文件
+_*.js
+.e2e-*

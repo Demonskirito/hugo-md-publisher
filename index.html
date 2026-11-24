@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MD 博客发布助手 - 本地版</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img class="brand-mark" src="app-logo.png" alt="N1ANYUN" />
+      <div>
+        <h1>MD 博客发布助手 <span class="tag-local">本地版</span></h1>
+        <p>本地 Hugo 构建，一键发到你的 GitHub 博客</p>
+      </div>
+    </div>
+    <button id="settingsBtn" class="btn ghost">⚙ 设置</button>
+  </header>
+
+  <main class="container">
+    <div id="statusBar" class="status-bar">
+      <span id="statusDot" class="status-dot"></span>
+      <span id="statusText">正在检查配置…</span>
+      <button id="statusAction" class="link-btn">去配置</button>
+    </div>
+
+    <section class="card" id="cardFile">
+      <div class="step-head">
+        <span class="step-num">1</span>
+        <div>
+          <h2>选择 Markdown 文件</h2>
+          <p class="sub">点击选择，或把 .md 文件拖进来</p>
+        </div>
+      </div>
+      <div id="dropzone" class="dropzone" tabindex="0">
+        <div class="drop-icon">📄</div>
+        <div id="dropLabel">拖拽 .md 文件到这里</div>
+        <div class="drop-hint">图片请用图床外链，程序不处理本地图片</div>
+        <button id="chooseBtn" class="btn primary">选择文件</button>
+      </div>
+      <div id="fileBadge" class="file-badge hidden">
+        <span class="dot"></span>
+        <span id="fileBadgeText"></span>
+        <button id="changeBtn" class="link-btn">更换</button>
+      </div>
+    </section>
+
+    <section class="card locked" id="cardForm">
+      <div class="step-head">
+        <span class="step-num">2</span>
+        <div>
+          <h2>确认文章信息</h2>
+          <p class="sub">这些会写进 frontmatter，可修改</p>
+        </div>
+      </div>
+      <div class="form-grid">
+        <label class="field full">
+          <span>标题</span>
+          <input id="fTitle" type="text" placeholder="文章标题" />
+        </label>
+        <label class="field full">
+          <span>URL 标识（slug）</span>
+          <input id="fSlug" type="text" placeholder="决定文章网址" />
+          <small id="slugHint">文章地址将在发布时显示</small>
+        </label>
+        <label class="field">
+          <span>分类（逗号分隔）</span>
+          <input id="fCategories" type="text" placeholder="如：学习笔记, 随笔" />
+        </label>
+        <label class="field">
+          <span>标签（逗号分隔）</span>
+          <input id="fTags" type="text" placeholder="如：Java, Vue" />
+        </label>
+        <label class="field">
+          <span>发布日期</span>
+          <input id="fDate" type="text" placeholder="2026-11-24T10:00:00+08:00" />
+        </label>
+        <label class="field">
+          <span>描述</span>
+          <input id="fDescription" type="text" placeholder="可选" />
+        </label>
+      </div>
+      <div class="notice" id="fmNotice"></div>
+      <button id="publishBtn" class="btn primary big">🚀 构建并发布</button>
+    </section>
+
+    <section class="card hidden" id="cardLog">
+      <div class="step-head">
+        <span class="step-num">3</span>
+        <div>
+          <h2>构建与上传进度</h2>
+          <p class="sub">本地构建 + 增量上传，通常几秒到几十秒</p>
+        </div>
+      </div>
+      <div id="logBox" class="logbox"></div>
+    </section>
+
+    <section class="card result hidden" id="cardResult">
+      <div class="result-icon">✅</div>
+      <h2>发布成功</h2>
+      <p id="resultMsg"></p>
+      <div class="result-path" id="resultPath"></div>
+      <button id="openLinkBtn" class="btn primary">打开文章</button>
+      <button id="againBtn" class="btn ghost">继续发布下一篇</button>
+    </section>
+  </main>
+
+  <!-- 设置弹窗 -->
+  <div id="settingsModal" class="modal hidden">
+    <div class="modal-mask"></div>
+    <div class="modal-panel">
+      <div class="modal-head">
+        <h2>连接你的 Hugo 博客</h2>
+        <button id="closeSettingsX" class="icon-btn">✕</button>
+      </div>
+      <p class="sub">第一次使用配置一次，之后选文件就能发。</p>
+
+      <div class="setup-block">
+        <div class="setup-title"><span class="badge">1</span> 本地 Hugo 项目</div>
+        <p class="hint">选择 Hugo 项目根目录（含 <code>hugo.yaml</code> 和 <code>content</code> 的那一层）。程序会读取里面的域名和网址格式。</p>
+        <div class="inline">
+          <input id="sProjectDir" type="text" placeholder="如：E:\Study\blog-hugo\hugo-test" />
+          <button id="pickProjectBtn" class="btn">选择目录</button>
+          <button id="inspectLocalBtn" class="btn">检测</button>
+        </div>
+        <div id="localResult" class="verify-result"></div>
+      </div>
+
+      <div class="setup-block">
+        <div class="setup-title"><span class="badge">2</span> Hugo 程序</div>
+        <p class="hint">通常放在项目根目录，留空会自动探测。</p>
+        <div class="inline">
+          <input id="sHugoPath" type="text" placeholder="留空自动探测 hugo.exe" />
+          <button id="pickHugoBtn" class="btn">选择</button>
+        </div>
+        <p class="hint" style="margin-top:10px">Git 程序一般自动探测，找不到时可手动指定 git.exe：</p>
+        <div class="inline">
+          <input id="sGitPath" type="text" placeholder="留空自动探测 git.exe（可选）" />
+        </div>
+      </div>
+
+      <div class="setup-block">
+        <div class="setup-title"><span class="badge">3</span> GitHub Token</div>
+        <p class="hint">用于把生成的页面提交到你的仓库。GitHub → Settings → Developer settings → Personal access tokens，勾选 <b>repo</b> 权限。留空表示不修改已保存的 Token。</p>
+        <div class="inline">
+          <input id="sToken" type="password" placeholder="粘贴 Token" />
+          <button id="verifyBtn" class="btn">验证</button>
+        </div>
+        <div id="verifyResult" class="verify-result"></div>
+      </div>
+
+      <div class="setup-block">
+        <div class="setup-title"><span class="badge">4</span> 选择仓库</div>
+        <div class="inline">
+          <select id="repoSelect" class="select">
+            <option value="">先验证 Token，再选仓库</option>
+          </select>
+          <button id="refreshReposBtn" class="btn">刷新</button>
+        </div>
+      </div>
+
+      <div class="setup-block">
+        <div class="setup-title"><span class="badge">5</span> 网络代理（国内通常必填）</div>
+        <p class="hint">国内直连 GitHub 通常不通。填代理软件的 HTTP 地址，例如 <code>http://127.0.0.1:7890</code>。能直连就留空。</p>
+        <input id="sProxy" type="text" placeholder="http://127.0.0.1:7890（可留空）" />
+      </div>
+
+      <div class="setup-block">
+        <div class="setup-title"><span class="badge">6</span> 博客参数 <span class="muted">（一般自动读取，可手动改）</span></div>
+        <div class="form-grid">
+          <label class="field">
+            <span>仓库所有者</span>
+            <input id="sOwner" type="text" placeholder="GitHub 用户名" />
+          </label>
+          <label class="field">
+            <span>仓库名</span>
+            <input id="sRepo" type="text" placeholder="xxx.github.io" />
+          </label>
+          <label class="field">
+            <span>分支</span>
+            <input id="sBranch" type="text" placeholder="main" />
+          </label>
+          <label class="field">
+            <span>博客域名</span>
+            <input id="sBaseurl" type="text" placeholder="https://xxx.github.io" />
+          </label>
+        </div>
+        <label class="field full" style="margin-top:12px">
+          <span>文章网址格式（permalink）</span>
+          <input id="sPermalink" type="text" placeholder="/p/{slug}/" />
+          <small>来自本地 hugo.yaml 的 permalinks.post</small>
+        </label>
+        <label class="field full" style="margin-top:12px">
+          <span>文章在 content 中的路径模板</span>
+          <input id="sTemplate" type="text" placeholder="content/post/{year}/{mmdd}-{slug}/index.md" />
+          <small>支持 {year} {month} {day} {mmdd} {slug} {filename}</small>
+        </label>
+      </div>
+
+      <div class="modal-actions">
+        <button id="cancelSettings" class="btn ghost">取消</button>
+        <button id="saveSettings" class="btn primary">保存设置</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="app-footer">
+    <span>N1ANYUN · MD 博客发布助手</span>
+    <span>作者：<a href="https://github.com/demonskirito" target="_blank">@demonskirito</a></span>
+  </footer>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="renderer.js"></script>
+</body>
+</html>

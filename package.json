@@ -1,0 +1,47 @@
+{
+  "name": "md-publisher-local",
+  "version": "1.0.0",
+  "description": "Markdown 一键发布到 GitHub 博客（本地 Hugo 构建 + Git 推送）",
+  "main": "main.js",
+  "author": "demonskirito",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win --x64"
+  },
+  "dependencies": {
+    "undici": "^6.21.0"
+  },
+  "devDependencies": {
+    "electron": "^38.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.blogpublisher.local",
+    "productName": "MD博客发布助手-本地版",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "github.js",
+      "sync.js",
+      "config.js",
+      "hugo.js",
+      "md.js",
+      "index.html",
+      "styles.css",
+      "renderer.js",
+      "app-logo.png",
+      "app.ico"
+    ],
+    "win": {
+      "target": [
+        "portable"
+      ],
+      "icon": "build/app.ico",
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    }
+  }
+}
