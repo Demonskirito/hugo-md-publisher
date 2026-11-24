@@ -19,6 +19,7 @@
   "build": {
     "appId": "com.blogpublisher.local",
     "productName": "MD博客发布助手-本地版",
+    "afterPack": "./afterPack.js",
     "directories": {
       "output": "dist"
     },
